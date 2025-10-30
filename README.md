@@ -7,4 +7,4 @@ Arduino libraries:
 
 Python Libraries:
 - pip install chess
-- 
+- pip install pyserial 
