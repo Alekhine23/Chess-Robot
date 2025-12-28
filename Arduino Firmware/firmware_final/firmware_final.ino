@@ -19,7 +19,8 @@ int angle;
 int speed;
 int expectedBytes;
 
-const float degPerStep = 0.9/4;
+const float degPerStep = 0.9;
+int gearRatio = 5;
 
 AccelStepper stepperRight(AccelStepper::DRIVER, stepPinRight, dirPinRight);
 AccelStepper stepperLeft(AccelStepper::DRIVER, stepPinLeft, dirPinLeft);
@@ -28,7 +29,6 @@ AccelStepper stepperBase(AccelStepper::DRIVER, stepPinBase, dirPinBase);
 VarSpeedServo myServo;
 
 void setup() {
-  // put your setup code here, to run once:
   pinMode(stepPinRight, OUTPUT);
   pinMode(dirPinRight, OUTPUT);
   pinMode(stepPinLeft, OUTPUT);
@@ -84,7 +84,11 @@ void loop() {
         angle = Serial.read();
         speed = Serial.read();
         myServo.slowmove(angle, speed);
-        delay(2000);
+
+        while(myServo.isMoving()) {
+        delay(10);
+        }
+        delay(100);
         break;
 
       case (2):
@@ -99,15 +103,15 @@ void loop() {
         stepperLeft.setPinsInverted(dirLeft == 0, false, false);
         stepperBase.setPinsInverted(dirBase == 0, false, false);
 
-        int stepsRight = round(angleRight/degPerStep);
-        int stepsLeft = round(angleLeft/degPerStep);
-        int stepsBase = round(angleBase/degPerStep);
+        int stepsRight = round((angleRight * gearRatio)/degPerStep);
+        int stepsLeft = round((angleLeft * gearRatio)/degPerStep);
+        int stepsBase = round((angleBase * gearRatio)/degPerStep);
 
         stepperRight.move(stepsRight);
         stepperLeft.move(stepsLeft);
         stepperBase.move(stepsBase);
 
-        while (stepperRight.distanceToGo() != 0 || stepperLeft.distanceToGo() != 0) {
+        while (stepperRight.distanceToGo() != 0 || stepperLeft.distanceToGo() != 0 || stepperBase.distanceToGo() != 0) {
           stepperRight.run();
           stepperLeft.run();
           stepperBase.run();
